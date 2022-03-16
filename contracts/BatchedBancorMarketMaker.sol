@@ -9,11 +9,11 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./bancor-formula/interfaces/IBancorFormula.sol";
 import "./bancor-formula/BancorFormula.sol";
-import "./MetaSoccerToken.sol";
+import "./BlastRoyaleToken.sol";
 
 contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
     using SafeERC20 for ERC20;
-    using SafeERC20 for MetaSoccerToken;
+    using SafeERC20 for BlastRoyaleToken;
     using SafeMath  for uint256;
 
     /**
@@ -80,7 +80,7 @@ contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
         mapping(address => uint256) sellers;
     }
 
-    MetaSoccerToken                public token;
+    BlastRoyaleToken                public token;
     address                        public beneficiary;
     IBancorFormula                 public formula;
 
@@ -167,7 +167,7 @@ contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
 
         formula = _formula;
-        token = MetaSoccerToken(_token);
+        token = BlastRoyaleToken(_token);
         beneficiary = _beneficiary;
         curveSupply = _curveSupply;
         minCurveSupply = _minCurveSupply;

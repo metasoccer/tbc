@@ -20,6 +20,7 @@ const openAndClaimBuyOrder = (test, blocksPerBatch) => async (from, collateral, 
   const afterPricePPM = await test.curve.getCollateralPricePPM(collateral);
   const afterPrice = (afterPricePPM.toNumber()/1000000);
   const priceDelta = (afterPrice - beforePrice)/beforePrice;
+  /*
   console.log("\nSuccesful curve BUY! \nBefore Price: %s DAI/MSU \nFrom: %s \nDAI Amount: %s \nMSU Amount: %s \nAverage trade price: %s DAI/MSU\nTrade Slippage: %s\% \nAfter Price: %s DAI/MSU \nPrice Delta: %s\% \nTotal MSU Supply: %s \nTotal Curve Reserve: %s\nAccumulated Trading Fees: %s DAI",
     beforePrice,
     from.address,
@@ -33,6 +34,7 @@ const openAndClaimBuyOrder = (test, blocksPerBatch) => async (from, collateral, 
     ethers.utils.formatEther(totalReserve),
     ethers.utils.formatEther(totalFees)
     );
+    */
 }
 
 const openAndClaimSellOrder = (test, blocksPerBatch) => async (from, collateral, amount) => {
@@ -57,6 +59,7 @@ const openAndClaimSellOrder = (test, blocksPerBatch) => async (from, collateral,
   const afterPricePPM = await test.curve.getCollateralPricePPM(collateral);
   const afterPrice = (afterPricePPM.toNumber()/1000000);
   const priceDelta = (afterPrice - beforePrice)/beforePrice;
+  /*
   console.log("\nSuccesful curve SELL! \nBefore Price: %s DAI/MSU \nFrom: %s \nDAI Amount: %s \nMSU Amount: %s \nAverage trade price: %s DAI/MSU\nTrade Slippage: %s\% \nAfter Price: %s DAI/MSU \nPrice Delta: %s\% \nTotal MSU Supply: %s \nTotal Curve Reserve: %s\nAccumulated Trading Fees: %s DAI",
     beforePrice,
     from.address,
@@ -70,6 +73,7 @@ const openAndClaimSellOrder = (test, blocksPerBatch) => async (from, collateral,
     ethers.utils.formatEther(totalReserve),
     ethers.utils.formatEther(totalFees)
     );
+    */
 }
 
 const bulkOpenAndClaimBuyOrder = (test, blocksPerBatch) => async (collateral, froms_with_amounts) => {

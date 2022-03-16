@@ -6,7 +6,7 @@ const { expect } = require("chai");
 const initialSupply = ethers.utils.parseEther('360000000');
 const initialCurveLiquidity = 540000; // DAIs from public sale
 const targetInitialPrice = 0.035;
-const reserveRatio = 0.2;
+const reserveRatio = 0.20;
 
 // Test Variables
 const blocksPerBatch = 20;

@@ -2,6 +2,7 @@ require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
 require('hardhat-abi-exporter');
 require("solidity-coverage");
+require('dotenv').config()
 
 /**
  * @type import('hardhat/config').HardhatUserConfig

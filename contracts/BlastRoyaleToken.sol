@@ -18,7 +18,7 @@ import "@openzeppelin/contracts/utils/Context.sol";
  * different roles - head to its documentation for details.
  *
  */
-contract MetaSoccerToken is Context, AccessControlEnumerable, ERC20, ERC20Pausable, ERC20Burnable {
+contract BlastRoyaleToken is Context, AccessControlEnumerable, ERC20, ERC20Pausable, ERC20Burnable {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
@@ -28,7 +28,7 @@ contract MetaSoccerToken is Context, AccessControlEnumerable, ERC20, ERC20Pausab
      *
      * See {ERC20-constructor}.
      */
-    constructor(address treasury, uint256 initialSupply) ERC20('Test Curve MSU', 'TMSU') {
+    constructor(address treasury, uint256 initialSupply) ERC20('Test Curve Blast', 'TBLT1') {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(PAUSER_ROLE, _msgSender());
