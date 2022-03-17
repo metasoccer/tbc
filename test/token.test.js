@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 const  decimalPlaces = 18;
 
-describe("MetaSoccerToken.sol", () => {
+describe("ERC20Token.sol", () => {
   let minter, wallet1, wallet2, wallet3;
   before(async  () => {
     const wallets = await ethers.getSigners();
@@ -16,14 +16,18 @@ describe("MetaSoccerToken.sol", () => {
 
   describe('Setting up the environment', () => {
     it("Should deploy an ERC20", async () => {
-      const Contract = await ethers.getContractFactory('MetaSoccerToken');
+      const Contract = await ethers.getContractFactory('ERC20Token');
 
       // Deploy NFT Contract and assign minter as MIMNTER_ROLE.
   	const initialSupply = ethers.utils.parseEther('360000000');
-      this.erc20 = await Contract.connect(this.admin).deploy(this.treasury.address, initialSupply)
-        .then(f => f.deployed());
-      expect(await this.erc20.name()).to.equal('Test Curve MSU');
-      expect(await this.erc20.symbol()).to.equal('TMSU');
+      this.erc20 = await Contract.connect(this.admin).deploy(
+        this.treasury.address,
+        initialSupply,
+        'test Token - Bonding Curve',
+        'TTBC1'
+      ).then(f => f.deployed());
+      expect(await this.erc20.name()).to.equal('test Token - Bonding Curve');
+      expect(await this.erc20.symbol()).to.equal('TTBC1');
       expect(await this.erc20.decimals()).to.equal(18);
       expect(await this.erc20.MINTER_ROLE())
         .to.equal('0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6');

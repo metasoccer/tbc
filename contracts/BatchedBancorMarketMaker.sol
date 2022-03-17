@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -9,11 +9,11 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./bancor-formula/interfaces/IBancorFormula.sol";
 import "./bancor-formula/BancorFormula.sol";
-import "./BlastRoyaleToken.sol";
+import "./ERC20Token.sol";
 
 contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
     using SafeERC20 for ERC20;
-    using SafeERC20 for BlastRoyaleToken;
+    using SafeERC20 for ERC20Token;
     using SafeMath  for uint256;
 
     /**
@@ -80,7 +80,7 @@ contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
         mapping(address => uint256) sellers;
     }
 
-    BlastRoyaleToken                public token;
+    ERC20Token                public token;
     address                        public beneficiary;
     IBancorFormula                 public formula;
 
@@ -167,7 +167,7 @@ contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
 
         formula = _formula;
-        token = BlastRoyaleToken(_token);
+        token = ERC20Token(_token);
         beneficiary = _beneficiary;
         curveSupply = _curveSupply;
         minCurveSupply = _minCurveSupply;
