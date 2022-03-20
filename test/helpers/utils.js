@@ -8,18 +8,19 @@ const openAndClaimBuyOrder = (test, blocksPerBatch) => async (from, collateral, 
     
   await progressToNextBatch(blocksPerBatch)();
   
-  const initialMsuBalance = await test.msu.balanceOf(from.address);
+  const initialMsuBalance = await test.token.balanceOf(from.address);
   await test.curve.connect(from).claimBuyOrder(from.address, batchId, collateral);
-  const finalMsuBalance = await test.msu.balanceOf(from.address);
+  const finalMsuBalance = await test.token.balanceOf(from.address);
   const tradeMsuAmount = finalMsuBalance.sub(initialMsuBalance);
   const avgPrice = Number(ethers.utils.formatEther(amount)) / Number(ethers.utils.formatEther(tradeMsuAmount));
   const slippage = (avgPrice - beforePrice)/beforePrice;
-  const totalSupply = await test.msu.totalSupply();
+  const totalSupply = await test.token.totalSupply();
   const totalReserve = await test.dai.balanceOf(test.curve.address);
   const totalFees = await test.dai.balanceOf(test.admin.address);
   const afterPricePPM = await test.curve.getCollateralPricePPM(collateral);
   const afterPrice = (afterPricePPM.toNumber()/1000000);
   const priceDelta = (afterPrice - beforePrice)/beforePrice;
+  /*
   console.log("\nSuccesful curve BUY! \nBefore Price: %s DAI/MSU \nFrom: %s \nDAI Amount: %s \nMSU Amount: %s \nAverage trade price: %s DAI/MSU\nTrade Slippage: %s\% \nAfter Price: %s DAI/MSU \nPrice Delta: %s\% \nTotal MSU Supply: %s \nTotal Curve Reserve: %s\nAccumulated Trading Fees: %s DAI",
     beforePrice,
     from.address,
@@ -33,6 +34,7 @@ const openAndClaimBuyOrder = (test, blocksPerBatch) => async (from, collateral, 
     ethers.utils.formatEther(totalReserve),
     ethers.utils.formatEther(totalFees)
     );
+    */
 }
 
 const openAndClaimSellOrder = (test, blocksPerBatch) => async (from, collateral, amount) => {
@@ -51,12 +53,13 @@ const openAndClaimSellOrder = (test, blocksPerBatch) => async (from, collateral,
   const tradeAmount = finalBalance.sub(initialBalance);
   const avgPrice = Number(ethers.utils.formatEther(tradeAmount)) / Number(ethers.utils.formatEther(amount));
   const slippage = (avgPrice - beforePrice)/beforePrice;
-  const totalSupply = await test.msu.totalSupply();
+  const totalSupply = await test.token.totalSupply();
   const totalReserve = await test.dai.balanceOf(test.curve.address);
   const totalFees = await test.dai.balanceOf(test.admin.address);
   const afterPricePPM = await test.curve.getCollateralPricePPM(collateral);
   const afterPrice = (afterPricePPM.toNumber()/1000000);
   const priceDelta = (afterPrice - beforePrice)/beforePrice;
+  /*
   console.log("\nSuccesful curve SELL! \nBefore Price: %s DAI/MSU \nFrom: %s \nDAI Amount: %s \nMSU Amount: %s \nAverage trade price: %s DAI/MSU\nTrade Slippage: %s\% \nAfter Price: %s DAI/MSU \nPrice Delta: %s\% \nTotal MSU Supply: %s \nTotal Curve Reserve: %s\nAccumulated Trading Fees: %s DAI",
     beforePrice,
     from.address,
@@ -70,6 +73,7 @@ const openAndClaimSellOrder = (test, blocksPerBatch) => async (from, collateral,
     ethers.utils.formatEther(totalReserve),
     ethers.utils.formatEther(totalFees)
     );
+    */
 }
 
 const bulkOpenAndClaimBuyOrder = (test, blocksPerBatch) => async (collateral, froms_with_amounts) => {
