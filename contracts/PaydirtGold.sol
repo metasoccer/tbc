@@ -1,5 +1,7 @@
+
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
@@ -18,9 +20,12 @@ import "@openzeppelin/contracts/utils/Context.sol";
  * different roles - head to its documentation for details.
  *
  */
-contract ERC20Token is Context, AccessControlEnumerable, ERC20, ERC20Pausable, ERC20Burnable {
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+
+contract PaydirtGold is Context, AccessControlEnumerable, ERC20, ERC20Pausable, ERC20Burnable{
+
+    bytes32 public constant MINTER_ROLE = 0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6;
+    bytes32 public constant PAUSER_ROLE = 0x65d7a28e3265b37a6474929f336521b332c1681b933f6cb9f3376673440d862a
+;
 
     /**
      * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` to the
@@ -34,7 +39,6 @@ contract ERC20Token is Context, AccessControlEnumerable, ERC20, ERC20Pausable, E
         _setupRole(PAUSER_ROLE, _msgSender());
 		_mint(treasury, initialSupply);
     }
-
     /**
      * @dev Creates `amount` new tokens for `to`.
      *
@@ -45,7 +49,7 @@ contract ERC20Token is Context, AccessControlEnumerable, ERC20, ERC20Pausable, E
      * - the caller must have the `MINTER_ROLE`.
      */
     function mint(address to, uint256 amount) public virtual {
-        require(hasRole(MINTER_ROLE, _msgSender()), "MetaSoccerToken: must have minter role to mint");
+        require(hasRole(MINTER_ROLE, _msgSender()), "must have minter role");
 		require(!paused(), 'minting while paused');
         _mint(to, amount);
     }
@@ -60,7 +64,7 @@ contract ERC20Token is Context, AccessControlEnumerable, ERC20, ERC20Pausable, E
      * - the caller must have the `PAUSER_ROLE`.
      */
     function pause() public virtual {
-        require(hasRole(PAUSER_ROLE, _msgSender()), "MetaSoccerToken: must have pauser role to pause");
+        require(hasRole(PAUSER_ROLE, _msgSender()), "must have pauser role");
         _pause();
     }
 
@@ -74,10 +78,11 @@ contract ERC20Token is Context, AccessControlEnumerable, ERC20, ERC20Pausable, E
      * - the caller must have the `PAUSER_ROLE`.
      */
     function unpause() public virtual {
-        require(hasRole(PAUSER_ROLE, _msgSender()), "MetaSoccerToken: must have pauser role to unpause");
+        require(hasRole(PAUSER_ROLE, _msgSender()), "must have pauser role");
         _unpause();
     }
 
+    
     function _beforeTokenTransfer(
         address from,
         address to,
@@ -85,4 +90,5 @@ contract ERC20Token is Context, AccessControlEnumerable, ERC20, ERC20Pausable, E
     ) internal virtual override(ERC20, ERC20Pausable) {
         super._beforeTokenTransfer(from, to, amount);
     }
+
 }

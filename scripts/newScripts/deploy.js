@@ -1,17 +1,13 @@
 async function main() {
+  //deployer account
   const [deployer] = await ethers.getSigners();
-
   console.log("Deploying contracts with the account:", deployer.address);
-  // deployer.getBalance().then((balance) => {
-  //   // convert a currency unit from wei to ether
-  //   const balanceInEth = ethers.utils.formatEther(balance);
-  //   console.log(`balance: ${balanceInEth} ETH`);
-  // });
   console.log("Account balance:", (await deployer.getBalance()).toString());
   const Balance = await deployer.getBalance();
   const formatedB = await ethers.utils.formatEther(Balance);
   console.log(formatedB + " Matic");
-  //change to paydirt gold
+
+  //paydirt gold
   const Token = await ethers.getContractFactory("PaydirtGold");
   //^^^^^^ASK COREY THE INITIAL SUPLLY^^^^^^^^^ 200 million total before bonding
   const initialSupply = ethers.utils.parseEther("200000000");
@@ -23,18 +19,17 @@ async function main() {
     name,
     symbol
   );
-  //CHANGE TO PAYDIRT GOLD
   console.log("Paydirt Gold address:", token.address);
 
+  //dai
   const Dai = await ethers.getContractFactory("TestDAI");
   const daiSupply = ethers.utils.parseEther("1000000000");
   const dai = await Dai.deploy(deployer.address, daiSupply);
-
   console.log("Test Curve DAIs address:", dai.address);
 
+  //formula
   const Formula = await ethers.getContractFactory("BancorFormula");
   const formula = await Formula.deploy();
-
   console.log("Bancor Formula address:", formula.address);
 
   /**The Reserve Ratio is expressed as a percentage greater than 0% and up to 100%.
@@ -50,8 +45,8 @@ async function main() {
   //we are using 20%
   const reserveRatio = 0.2; //0.5
 
-  //I think this is to disable sniping bots
-  const blocksPerBatch = 5;
+  //to disable sniping bots
+  const blocksPerBatch = 20; //5
 
   //SHOULD WE ADD THE 10k COREY SAID
   //Mainnet 480K
@@ -70,10 +65,8 @@ async function main() {
   //OUR PRICE SHOULD BE 0.08$, metasoccer 0.035$
   const targetInitialPrice = 0.035;
 
-  //WHERE DOES THIS FEE APPEAR, IT IS LITERALLY 0
-  //probably we will change it once the contract is deployed
-  const buyFee = ethers.utils.parseEther("0"); // 0.15% Buying Trading Fee
-  const sellFee = ethers.utils.parseEther("0"); // 0.3% Selling Trading Fee
+  const buyFee = ethers.utils.parseEther("0.0015"); // 0.15% Buying Trading Fee
+  const sellFee = ethers.utils.parseEther("0.003"); // 0.3% Buying Trading Fee
 
   //inital curves supply says Corey 200million
 
@@ -97,8 +90,9 @@ async function main() {
     buyFee,
     sellFee
   );
-
+  await curve.deployed();
   console.log("Curve address:", curve.address);
+  console.log("successfully deployed the contracts");
 }
 
 main()

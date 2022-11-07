@@ -48,7 +48,7 @@ async function main() {
 
   //THINK THIS IS 25% for metasoccer, There are projects using 40% also
   //we are using 20%
-  const reserveRatio = 0.2; //0.5
+  const reserveRatio = 0.5;
 
   //I think this is to disable sniping bots
   const blocksPerBatch = 5;
@@ -56,7 +56,7 @@ async function main() {
   //SHOULD WE ADD THE 10k COREY SAID
   //Mainnet 480K
   //Test: 10k from Corey
-  const initialCurveLiquidity = 540000; // USDC from Corey
+  const initialCurveLiquidity = 10000; // USDC from Corey
 
   /**Bancor Formula
    *
@@ -68,7 +68,7 @@ async function main() {
    * */
 
   //OUR PRICE SHOULD BE 0.08$, metasoccer 0.035$
-  const targetInitialPrice = 0.035;
+  const targetInitialPrice = 0.08;
 
   //WHERE DOES THIS FEE APPEAR, IT IS LITERALLY 0
   //probably we will change it once the contract is deployed
@@ -84,7 +84,7 @@ async function main() {
     initialCurveSupply.toString()
   );
   //CHECK AGAIN
-  const minCurveSupply = ethers.utils.parseEther("60000000");
+  const minCurveSupply = ethers.utils.parseEther("150000");
 
   const Curve = await ethers.getContractFactory("BatchedBancorMarketMaker");
   const curve = await Curve.deploy(

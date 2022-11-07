@@ -1,333 +1,336 @@
-// const { BigNumber } = require("@ethersproject/bignumber");
-// const { expect } = require("chai");
-// //const expect = require("chai").expect;
+const { BigNumber } = require("@ethersproject/bignumber");
+const { expect } = require("chai");
+const { mocha } = require("mocha");
+//const expect = require("chai").expect;
 
-// // Project Constants
-// const initialSupply = ethers.utils.parseEther("360000000"); //360000000 //200000000
-// const initialCurveLiquidity = 540000; // USDCs from Corey 10000  //540000 DAI
-// const targetInitialPrice = 0.08; //0.035 They are targeting the price at the TBC offer, it was not the first one
-// const reserveRatio = 0.2; //0.2 //0.5
+// Project Constants
+const initialSupply = ethers.utils.parseEther("360000000"); //360000000 //200000000
+const initialCurveLiquidity = 540000; // USDCs from Corey 10000  //540000 DAI
+const targetInitialPrice = 0.08; //0.035 They are targeting the price at the TBC offer, it was not the first one
+const reserveRatio = 0.2; //0.2 //0.5
 
-// // Test Variables
-// //how much everybatch lasts
-// const blocksPerBatch = 20; //20 //5?? //15 =  300seconds
-// const slippage = ethers.utils.parseEther(".1"); // 10 pct max slippage
-// const buyFee = ethers.utils.parseEther("0.0015"); // 0.15% Buying Trading Fee
-// const sellFee = ethers.utils.parseEther("0.003"); // 0.3% Buying Trading Fee
-// const initialCurveSupply =
-//   initialCurveLiquidity / (targetInitialPrice * reserveRatio); // Value from model 61714285.71428571 OR 77.14285714285714, now calculated dynamically
-// const minCurveSupply = ethers.utils.parseEther("100000");
-// const PPM = 1000000;
-// const reserveRatioPPM = reserveRatio * PPM; //500000                     250000 => 25 pct in PPM  //PPM: 1000000 = 1x10*7 = 100% PPM and 250000 in 25%
+// Test Variables
+//how much everybatch lasts
+const blocksPerBatch = 20; //20 //5?? //15 =  300seconds
+const slippage = ethers.utils.parseEther(".1"); // 10 pct max slippage
+const buyFee = ethers.utils.parseEther("0.0015"); // 0.15% Buying Trading Fee
+const sellFee = ethers.utils.parseEther("0.003"); // 0.3% Buying Trading Fee
+const initialCurveSupply =
+  initialCurveLiquidity / (targetInitialPrice * reserveRatio); // Value from model 61714285.71428571 OR 77.14285714285714, now calculated dynamically
+const minCurveSupply = ethers.utils.parseEther("100000");
+const PPM = 1000000;
+const reserveRatioPPM = reserveRatio * PPM; //500000                     250000 => 25 pct in PPM  //PPM: 1000000 = 1x10*7 = 100% PPM and 250000 in 25%
 
-// // Simulation Variables
-// const simulationRuns = 5;
-// const simulationAmount = ethers.utils.parseEther("100000");
+// Simulation Variables
+const simulationRuns = 5;
+const simulationAmount = ethers.utils.parseEther("100000");
 
-// // Helpers
-// const openAndClaimBuyOrder = require("./helpers/utils").openAndClaimBuyOrder(
-//   this,
-//   blocksPerBatch
-// );
-// const openAndClaimSellOrder = require("./helpers/utils").openAndClaimSellOrder(
-//   this,
-//   blocksPerBatch
-// );
-// const progressToNextBatch =
-//   require("./helpers/utils").progressToNextBatch(blocksPerBatch);
+// Helpers
+const openAndClaimBuyOrder =
+  require("../../test/helpers/utils").openAndClaimBuyOrder(
+    this,
+    blocksPerBatch
+  );
+const openAndClaimSellOrder =
+  require("../../test/helpers/utils").openAndClaimSellOrder(
+    this,
+    blocksPerBatch
+  );
+const progressToNextBatch =
+  require("../../test/helpers/utils").progressToNextBatch(blocksPerBatch);
 
-// describe("BatchedBancorMarketMaker.sol: testing the Curve!", () => {
-//   before(async () => {
-//     const wallets = await ethers.getSigners();
-//     this.admin = wallets[0];
-//     this.minter = wallets[1];
-//     this.pauser = wallets[2];
-//     this.treasury = wallets[3];
-//     this.alice = wallets[4];
-//     this.bob = wallets[5];
-//     this.charlie = wallets[6];
-//   });
+describe("BatchedBancorMarketMaker.sol: testing the Curve!", () => {
+  before(async () => {
+    const wallets = await ethers.getSigners();
+    this.admin = wallets[0];
+    this.minter = wallets[1];
+    this.pauser = wallets[2];
+    this.treasury = wallets[3];
+    this.alice = wallets[4];
+    this.bob = wallets[5];
+    this.charlie = wallets[6];
+  });
 
-//   describe("Setting up the environment", () => {
-//     it("Should deploy TokenERC20", async () => {
-//       const TokenContract = await ethers.getContractFactory("PaydirtGold");
-//       this.token = await TokenContract.connect(this.admin)
-//         .deploy(this.treasury.address, initialSupply, "Test Curve", "TTest1")
-//         .then((f) => f.deployed());
-//       expect(await this.token.name()).to.equal("Test Curve");
-//       expect(await this.token.symbol()).to.equal("TTest1");
-//       expect(await this.token.decimals()).to.equal(18);
-//       expect(await this.token.MINTER_ROLE()).to.equal(
-//         "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6"
-//       );
-//       expect(await this.token.PAUSER_ROLE()).to.equal(
-//         "0x65d7a28e3265b37a6474929f336521b332c1681b933f6cb9f3376673440d862a"
-//       );
-//       expect(await this.token.totalSupply()).to.equal(initialSupply);
-//     });
+  describe("Setting up the environment", () => {
+    it("Should deploy TokenERC20", async () => {
+      const TokenContract = await ethers.getContractFactory("PaydirtGold");
+      this.token = await TokenContract.connect(this.admin)
+        .deploy(this.treasury.address, initialSupply, "Test Curve", "TTest1")
+        .then((f) => f.deployed());
+      expect(await this.token.name()).to.equal("Test Curve");
+      expect(await this.token.symbol()).to.equal("TTest1");
+      expect(await this.token.decimals()).to.equal(18);
+      expect(await this.token.MINTER_ROLE()).to.equal(
+        "0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6"
+      );
+      expect(await this.token.PAUSER_ROLE()).to.equal(
+        "0x65d7a28e3265b37a6474929f336521b332c1681b933f6cb9f3376673440d862a"
+      );
+      expect(await this.token.totalSupply()).to.equal(initialSupply);
+    });
 
-//     it("Should deploy Test DAI", async () => {
-//       const DAIContract = await ethers.getContractFactory("TestDAI");
-//       this.dai = await DAIContract.connect(this.admin)
-//         .deploy(this.treasury.address, ethers.utils.parseEther("1000000000"))
-//         .then((f) => f.deployed());
-//       expect(await this.dai.name()).to.equal("Test Curve DAI");
-//       expect(await this.dai.symbol()).to.equal("TCDAI");
-//       expect(await this.dai.decimals()).to.equal(18);
-//     });
+    it("Should deploy Test DAI", async () => {
+      const DAIContract = await ethers.getContractFactory("TestDAI");
+      this.dai = await DAIContract.connect(this.admin)
+        .deploy(this.treasury.address, ethers.utils.parseEther("1000000000"))
+        .then((f) => f.deployed());
+      expect(await this.dai.name()).to.equal("Test Curve DAI");
+      expect(await this.dai.symbol()).to.equal("TCDAI");
+      expect(await this.dai.decimals()).to.equal(18);
+    });
 
-//     it("Should deploy Bancor Formula", async () => {
-//       const Formula = await ethers.getContractFactory("BancorFormula");
-//       this.formula = await Formula.connect(this.admin)
-//         .deploy()
-//         .then((f) => f.deployed());
-//       expect(await this.formula.version()).to.equal(4);
-//     });
+    it("Should deploy Bancor Formula", async () => {
+      const Formula = await ethers.getContractFactory("BancorFormula");
+      this.formula = await Formula.connect(this.admin)
+        .deploy()
+        .then((f) => f.deployed());
+      expect(await this.formula.version()).to.equal(4);
+    });
 
-//     it("Should fail to deploy the Curve with wrong arguments", async () => {
-//       const Curve = await ethers.getContractFactory("BatchedBancorMarketMaker");
-//       await expect(
-//         Curve.connect(this.admin).deploy(
-//           this.formula.address,
-//           this.token.address,
-//           "0x0000000000000000000000000000000000000000",
-//           ethers.utils.parseEther(initialCurveSupply.toString()),
-//           minCurveSupply,
-//           blocksPerBatch,
-//           buyFee,
-//           sellFee
-//         )
-//       ).to.be.revertedWith("MM_INVALID_BENEFICIARY");
+    it("Should fail to deploy the Curve with wrong arguments", async () => {
+      const Curve = await ethers.getContractFactory("BatchedBancorMarketMaker");
+      await expect(
+        Curve.connect(this.admin).deploy(
+          this.formula.address,
+          this.token.address,
+          "0x0000000000000000000000000000000000000000",
+          ethers.utils.parseEther(initialCurveSupply.toString()),
+          minCurveSupply,
+          blocksPerBatch,
+          buyFee,
+          sellFee
+        )
+      ).to.be.revertedWith("MM_INVALID_BENEFICIARY");
 
-//       await expect(
-//         Curve.connect(this.admin).deploy(
-//           this.formula.address,
-//           this.token.address,
-//           this.admin.address,
-//           ethers.utils.parseEther(initialCurveSupply.toString()),
-//           minCurveSupply,
-//           0,
-//           buyFee,
-//           sellFee
-//         )
-//       ).to.be.revertedWith("MM_INVALID_BATCH_BLOCKS");
+      await expect(
+        Curve.connect(this.admin).deploy(
+          this.formula.address,
+          this.token.address,
+          this.admin.address,
+          ethers.utils.parseEther(initialCurveSupply.toString()),
+          minCurveSupply,
+          0,
+          buyFee,
+          sellFee
+        )
+      ).to.be.revertedWith("MM_INVALID_BATCH_BLOCKS");
 
-//       await expect(
-//         Curve.connect(this.admin).deploy(
-//           this.formula.address,
-//           this.token.address,
-//           this.admin.address,
-//           ethers.utils.parseEther(initialCurveSupply.toString()),
-//           minCurveSupply,
-//           blocksPerBatch,
-//           buyFee,
-//           ethers.utils.parseEther("1")
-//         )
-//       ).to.be.revertedWith("MM_INVALID_PERCENTAGE");
-//     });
+      await expect(
+        Curve.connect(this.admin).deploy(
+          this.formula.address,
+          this.token.address,
+          this.admin.address,
+          ethers.utils.parseEther(initialCurveSupply.toString()),
+          minCurveSupply,
+          blocksPerBatch,
+          buyFee,
+          ethers.utils.parseEther("1")
+        )
+      ).to.be.revertedWith("MM_INVALID_PERCENTAGE");
+    });
 
-//     it("Should deploy the Curve", async () => {
-//       const Curve = await ethers.getContractFactory("BatchedBancorMarketMaker");
-//       this.curve = await Curve.connect(this.admin)
-//         .deploy(
-//           this.formula.address,
-//           this.token.address,
-//           this.admin.address,
-//           ethers.utils.parseEther(initialCurveSupply.toString()),
-//           minCurveSupply,
-//           blocksPerBatch,
-//           buyFee,
-//           sellFee
-//         )
-//         .then((f) => f.deployed());
-//       expect(await this.curve.beneficiary()).to.equal(this.admin.address);
-//     });
+    it("Should deploy the Curve", async () => {
+      const Curve = await ethers.getContractFactory("BatchedBancorMarketMaker");
+      this.curve = await Curve.connect(this.admin)
+        .deploy(
+          this.formula.address,
+          this.token.address,
+          this.admin.address,
+          ethers.utils.parseEther(initialCurveSupply.toString()),
+          minCurveSupply,
+          blocksPerBatch,
+          buyFee,
+          sellFee
+        )
+        .then((f) => f.deployed());
+      expect(await this.curve.beneficiary()).to.equal(this.admin.address);
+    });
 
-//     it("Should set the Curve as a valid minter", async () => {
-//       const MINTER_ROLE = await this.token.MINTER_ROLE();
-//       await this.token
-//         .connect(this.admin)
-//         .grantRole(MINTER_ROLE, this.curve.address);
-//       expect(
-//         await this.token.hasRole(MINTER_ROLE, this.curve.address)
-//       ).to.equal(true);
-//     });
-//   });
+    it("Should set the Curve as a valid minter", async () => {
+      const MINTER_ROLE = await this.token.MINTER_ROLE();
+      await this.token
+        .connect(this.admin)
+        .grantRole(MINTER_ROLE, this.curve.address);
+      expect(
+        await this.token.hasRole(MINTER_ROLE, this.curve.address)
+      ).to.equal(true);
+    });
+  });
 
-//   describe("Initializing the Curve", () => {
-//     it("Should set a valid address to open trading", async () => {
-//       const OPEN_ROLE = await this.curve.OPEN_ROLE();
-//       await this.curve
-//         .connect(this.admin)
-//         .grantRole(OPEN_ROLE, this.admin.address);
-//       expect(await this.curve.hasRole(OPEN_ROLE, this.admin.address)).to.equal(
-//         true
-//       );
-//     });
+  describe("Initializing the Curve", () => {
+    it("Should set a valid address to open trading", async () => {
+      const OPEN_ROLE = await this.curve.OPEN_ROLE();
+      await this.curve
+        .connect(this.admin)
+        .grantRole(OPEN_ROLE, this.admin.address);
+      expect(await this.curve.hasRole(OPEN_ROLE, this.admin.address)).to.equal(
+        true
+      );
+    });
 
-//     it("Should add initial collateral to the curve", async () => {
-//       await this.dai
-//         .connect(this.treasury)
-//         .transfer(
-//           this.curve.address,
-//           ethers.utils.parseEther(initialCurveLiquidity.toString())
-//         );
+    it("Should add initial collateral to the curve", async () => {
+      await this.dai
+        .connect(this.treasury)
+        .transfer(
+          this.curve.address,
+          ethers.utils.parseEther(initialCurveLiquidity.toString())
+        );
 
-//       await this.curve
-//         .connect(this.admin)
-//         .addCollateralToken(
-//           this.dai.address,
-//           ethers.BigNumber.from(0),
-//           ethers.BigNumber.from(0),
-//           reserveRatioPPM,
-//           slippage
-//         );
+      await this.curve
+        .connect(this.admin)
+        .addCollateralToken(
+          this.dai.address,
+          ethers.BigNumber.from(0),
+          ethers.BigNumber.from(0),
+          reserveRatioPPM,
+          slippage
+        );
 
-//       expect(await this.dai.balanceOf(this.curve.address)).to.equal(
-//         ethers.utils.parseEther(initialCurveLiquidity.toString())
-//       );
-//       expect(
-//         await this.curve.getCollateralToken(this.dai.address)
-//       ).to.deep.equal([
-//         true,
-//         ethers.BigNumber.from(0),
-//         ethers.BigNumber.from(0),
-//         reserveRatioPPM,
-//         slippage,
-//       ]);
-//     });
+      expect(await this.dai.balanceOf(this.curve.address)).to.equal(
+        ethers.utils.parseEther(initialCurveLiquidity.toString())
+      );
+      expect(
+        await this.curve.getCollateralToken(this.dai.address)
+      ).to.deep.equal([
+        true,
+        ethers.BigNumber.from(0),
+        ethers.BigNumber.from(0),
+        reserveRatioPPM,
+        slippage,
+      ]);
+    });
 
-//     it("Should open trading", async () => {
-//       await this.curve.connect(this.admin).open(true);
-//       expect(await this.curve.isOpen()).to.equal(true);
-//     });
-//   });
-//   describe("Alice buying at the Curve for 100k", () => {
-//     it("Should transfer 100K test DAIs to Alice", async () => {
-//       const amount = ethers.utils.parseEther("100000");
-//       await this.dai
-//         .connect(this.treasury)
-//         .transfer(this.alice.address, amount);
-//       expect(await this.dai.balanceOf(this.alice.address)).to.equal(amount);
-//     });
+    it("Should open trading", async () => {
+      await this.curve.connect(this.admin).open(true);
+      expect(await this.curve.isOpen()).to.equal(true);
+    });
+  });
+  describe("Alice buying at the Curve for 100k", () => {
+    it("Should transfer 100K test DAIs to Alice", async () => {
+      const amount = ethers.utils.parseEther("100000");
+      await this.dai
+        .connect(this.treasury)
+        .transfer(this.alice.address, amount);
+      expect(await this.dai.balanceOf(this.alice.address)).to.equal(amount);
+    });
 
-//     it("Should not allow Alice to buy with wrong collateral", async () => {
-//       await expect(
-//         this.curve
-//           .connect(this.alice)
-//           .openBuyOrder(this.alice.address, this.token.address, 1)
-//       ).to.be.revertedWith("MM_COLLATERAL_NOT_WHITELISTED");
-//     });
+    it("Should not allow Alice to buy with wrong collateral", async () => {
+      await expect(
+        this.curve
+          .connect(this.alice)
+          .openBuyOrder(this.alice.address, this.token.address, 1)
+      ).to.be.revertedWith("MM_COLLATERAL_NOT_WHITELISTED");
+    });
 
-//     it("Should not allow Alice to buy without approval", async () => {
-//       const amount = await this.dai.balanceOf(this.alice.address);
-//       await expect(
-//         this.curve
-//           .connect(this.alice)
-//           .openBuyOrder(this.alice.address, this.dai.address, amount)
-//       ).to.be.revertedWith("MM_INVALID_COLLATERAL_VALUE");
-//     });
+    it("Should not allow Alice to buy without approval", async () => {
+      const amount = await this.dai.balanceOf(this.alice.address);
+      await expect(
+        this.curve
+          .connect(this.alice)
+          .openBuyOrder(this.alice.address, this.dai.address, amount)
+      ).to.be.revertedWith("MM_INVALID_COLLATERAL_VALUE");
+    });
 
-//     it("Should not allow Alice to buy for 0", async () => {
-//       await expect(
-//         this.curve
-//           .connect(this.alice)
-//           .openBuyOrder(this.alice.address, this.dai.address, 0)
-//       ).to.be.revertedWith("MM_INVALID_COLLATERAL_VALUE");
-//     });
+    it("Should not allow Alice to buy for 0", async () => {
+      await expect(
+        this.curve
+          .connect(this.alice)
+          .openBuyOrder(this.alice.address, this.dai.address, 0)
+      ).to.be.revertedWith("MM_INVALID_COLLATERAL_VALUE");
+    });
 
-//     it("Should not allow Alice to sell since she has not bought yet", async () => {
-//       const aliceBalance = await this.token.balanceOf(this.alice.address);
-//       await expect(
-//         this.curve
-//           .connect(this.alice)
-//           .openSellOrder(this.alice.address, this.dai.address, aliceBalance)
-//       ).to.be.revertedWith("MM_INVALID_BOND_AMOUNT");
-//     });
+    it("Should not allow Alice to sell since she has not bought yet", async () => {
+      const aliceBalance = await this.token.balanceOf(this.alice.address);
+      await expect(
+        this.curve
+          .connect(this.alice)
+          .openSellOrder(this.alice.address, this.dai.address, aliceBalance)
+      ).to.be.revertedWith("MM_INVALID_BOND_AMOUNT");
+    });
 
-//     it("Should allow Alice to buy at the curve for 100K TDAIs", async () => {
-//       const amount = ethers.utils.parseEther("100000");
-//       await this.dai.connect(this.alice).approve(this.curve.address, amount);
-//       await openAndClaimBuyOrder(this.alice, this.dai.address, amount);
-//     });
-//   });
+    it("Should allow Alice to buy at the curve for 100K TDAIs", async () => {
+      const amount = ethers.utils.parseEther("100000");
+      await this.dai.connect(this.alice).approve(this.curve.address, amount);
+      await openAndClaimBuyOrder(this.alice, this.dai.address, amount);
+    });
+  });
 
-//   describe("Bob buying at the Curve for 100k", () => {
-//     it("Should transfer 100K test DAIs to Bob", async () => {
-//       const amount = ethers.utils.parseEther("100000");
-//       await this.dai.connect(this.treasury).transfer(this.bob.address, amount);
-//       expect(await this.dai.balanceOf(this.bob.address)).to.equal(amount);
-//     });
+  describe("Bob buying at the Curve for 100k", () => {
+    it("Should transfer 100K test DAIs to Bob", async () => {
+      const amount = ethers.utils.parseEther("100000");
+      await this.dai.connect(this.treasury).transfer(this.bob.address, amount);
+      expect(await this.dai.balanceOf(this.bob.address)).to.equal(amount);
+    });
 
-//     it("Should allow Bob to buy at the curve for 100K TDAIs", async () => {
-//       const amount = ethers.utils.parseEther("100000");
-//       await this.dai.connect(this.bob).approve(this.curve.address, amount);
-//       await openAndClaimBuyOrder(this.bob, this.dai.address, amount);
-//     });
-//   });
+    it("Should allow Bob to buy at the curve for 100K TDAIs", async () => {
+      const amount = ethers.utils.parseEther("100000");
+      await this.dai.connect(this.bob).approve(this.curve.address, amount);
+      await openAndClaimBuyOrder(this.bob, this.dai.address, amount);
+    });
+  });
 
-//   describe("Alice selling at the Curve", () => {
-//     it("Should not allow Alice to sell his Tokens without approval", async () => {
-//       const aliceBalance = await this.token.balanceOf(this.alice.address);
-//       await expect(
-//         this.curve
-//           .connect(this.alice)
-//           .openSellOrder(this.alice.address, this.dai.address, aliceBalance)
-//       ).to.be.revertedWith("ERC20: insufficient allowance");
-//     });
+  describe("Alice selling at the Curve", () => {
+    it("Should not allow Alice to sell his Tokens without approval", async () => {
+      const aliceBalance = await this.token.balanceOf(this.alice.address);
+      await expect(
+        this.curve
+          .connect(this.alice)
+          .openSellOrder(this.alice.address, this.dai.address, aliceBalance)
+      ).to.be.revertedWith("ERC20: insufficient allowance");
+    });
 
-//     it("Should allow Alice to sell at the curve all his Tokens", async () => {
-//       const aliceBalance = await this.token.balanceOf(this.alice.address);
-//       await this.token
-//         .connect(this.alice)
-//         .approve(this.curve.address, aliceBalance);
-//       await openAndClaimSellOrder(this.alice, this.dai.address, aliceBalance);
-//     });
-//   });
+    it("Should allow Alice to sell at the curve all his Tokens", async () => {
+      const aliceBalance = await this.token.balanceOf(this.alice.address);
+      await this.token
+        .connect(this.alice)
+        .approve(this.curve.address, aliceBalance);
+      await openAndClaimSellOrder(this.alice, this.dai.address, aliceBalance);
+    });
+  });
 
-//   describe("Bob selling at the Curve", () => {
-//     it("Should allow Bob to sell at the curve all his Tokens", async () => {
-//       const bobBalance = await this.token.balanceOf(this.bob.address);
-//       await this.token
-//         .connect(this.bob)
-//         .approve(this.curve.address, bobBalance);
-//       await openAndClaimSellOrder(this.bob, this.dai.address, bobBalance);
-//     });
-//   });
+  describe("Bob selling at the Curve", () => {
+    it("Should allow Bob to sell at the curve all his Tokens", async () => {
+      const bobBalance = await this.token.balanceOf(this.bob.address);
+      await this.token
+        .connect(this.bob)
+        .approve(this.curve.address, bobBalance);
+      await openAndClaimSellOrder(this.bob, this.dai.address, bobBalance);
+    });
+  });
 
-//   describe("Alice and Bob buying in same batch", () => {
-//     it("Should allow Alice and Bob to buy in same batch", async () => {
-//       const amountA = ethers.utils.parseEther("50000");
-//       const amountB = ethers.utils.parseEther("50000");
-//       await this.dai.connect(this.alice).approve(this.curve.address, amountA);
-//       await this.dai.connect(this.bob).approve(this.curve.address, amountB);
-//       const txA = await this.curve
-//         .connect(this.alice)
-//         .openBuyOrder(this.alice.address, this.dai.address, amountA);
-//       const receiptA = await txA.wait();
-//       const eventA = receiptA.events?.filter((x) => {
-//         return x.event == "OpenBuyOrder";
-//       });
-//       const batchIdA = eventA["0"]["args"]["batchId"];
-//       const txB = await this.curve
-//         .connect(this.bob)
-//         .openBuyOrder(this.bob.address, this.dai.address, amountB);
-//       const receiptB = await txB.wait();
-//       const eventB = receiptB.events?.filter((x) => {
-//         return x.event == "OpenBuyOrder";
-//       });
-//       const batchIdB = eventB["0"]["args"]["batchId"];
-//       expect(batchIdA).to.equal(batchIdB);
+  describe("Alice and Bob buying in same batch", () => {
+    it("Should allow Alice and Bob to buy in same batch", async () => {
+      const amountA = ethers.utils.parseEther("50000");
+      const amountB = ethers.utils.parseEther("50000");
+      await this.dai.connect(this.alice).approve(this.curve.address, amountA);
+      await this.dai.connect(this.bob).approve(this.curve.address, amountB);
+      const txA = await this.curve
+        .connect(this.alice)
+        .openBuyOrder(this.alice.address, this.dai.address, amountA);
+      const receiptA = await txA.wait();
+      const eventA = receiptA.events?.filter((x) => {
+        return x.event == "OpenBuyOrder";
+      });
+      const batchIdA = eventA["0"]["args"]["batchId"];
+      const txB = await this.curve
+        .connect(this.bob)
+        .openBuyOrder(this.bob.address, this.dai.address, amountB);
+      const receiptB = await txB.wait();
+      const eventB = receiptB.events?.filter((x) => {
+        return x.event == "OpenBuyOrder";
+      });
+      const batchIdB = eventB["0"]["args"]["batchId"];
+      expect(batchIdA).to.equal(batchIdB);
 
-//       await progressToNextBatch();
+      await progressToNextBatch();
 
-//       await this.curve
-//         .connect(this.alice)
-//         .claimBuyOrder(this.alice.address, batchIdA, this.dai.address);
-//       await this.curve
-//         .connect(this.bob)
-//         .claimBuyOrder(this.bob.address, batchIdB, this.dai.address);
-//     });
+      await this.curve
+        .connect(this.alice)
+        .claimBuyOrder(this.alice.address, batchIdA, this.dai.address);
+      await this.curve
+        .connect(this.bob)
+        .claimBuyOrder(this.bob.address, batchIdB, this.dai.address);
+    });
 
 //     it("Should allow Bob to sell at the curve all his Tokens", async () => {
 //       const bobBalance = await this.token.balanceOf(this.bob.address);
@@ -884,4 +887,11 @@
 //       const batch = await this.curve.getBatch(batchId, this.dai.address);
 //     });
 //   });
-// });
+});
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

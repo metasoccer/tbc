@@ -1,19 +1,21 @@
-const TokenContract = require("../artifacts/contracts/PaydirtGold.sol/PaydirtGold.json");
-const DaiContract = require("../artifacts/contracts/TestDAI.sol/TestDAI.json");
-const CurveContract = require("../artifacts/contracts/BatchedBancorMarketMaker.sol/BatchedBancorMarketMaker.json");
+const TokenContract = require("../../artifacts/contracts/PaydirtGold.sol/PaydirtGold.json");
+const DaiContract = require("../../artifacts/contracts/TestDAI.sol/TestDAI.json");
+const CurveContract = require("../../artifacts/contracts/BatchedBancorMarketMaker.sol/BatchedBancorMarketMaker.json");
+const {
+  daiAddress,
+  tokenAddress,
+  bancorAddress,
+  curveAddress,
+} = require("./helpers/addresses");
 
 async function main() {
-  const [deployer] = await ethers.getSigners();
-  const daiAddress = "0x237F2756fcf7F6110FDb84D1a143D96C1b80ED11";
-  const tokenAddress = "0x413A315912c49796Ad02679DD26D57Eb90720f8F";
-  const curveAddress = "0x02c31AF09Bd189fab6a2Db9B72DD858FBBF4236e";
-  const bancorAddress = "0x0B4D23e0F8c926501F364C8931E0dfFbeA8419DA";
+  const [deployer, buyer] = await ethers.getSigners();
 
   const initialCurveLiquidity = 540000; //10000
   const reserveRatio = 0.2; //0.5
   const PPM = 1000000;
   const reserveRatioPPM = reserveRatio * PPM;
-  const slippage = ethers.utils.parseEther(".1");
+  const slippage = ethers.utils.parseEther(".3");
 
   console.log("\n** Paydirt Gold");
   const token = new ethers.Contract(tokenAddress, TokenContract.abi, deployer);
@@ -44,7 +46,6 @@ async function main() {
   await tx.wait();
 
   console.log("\n** Add initial collateral to the curve");
-  //error from metasoccer
   tx = await dai.transfer(
     curveAddress,
     ethers.utils.parseEther(initialCurveLiquidity.toString())

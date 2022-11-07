@@ -3,15 +3,14 @@
 // //const expect = require("chai").expect;
 
 // // Project Constants
-// const initialSupply = ethers.utils.parseEther("360000000"); //360000000 //200000000
-// const initialCurveLiquidity = 540000; // USDCs from Corey 10000  //540000 DAI
+// const initialSupply = ethers.utils.parseEther("200000000"); //360000000 //200000000
+// const initialCurveLiquidity = 10000; // USDCs from Corey 10000  //540000 DAI
 // const targetInitialPrice = 0.08; //0.035 They are targeting the price at the TBC offer, it was not the first one
-// const reserveRatio = 0.2; //0.2 //0.5
+// const reserveRatio = 0.5; //0.2 //0.5
 
 // // Test Variables
-// //how much everybatch lasts
-// const blocksPerBatch = 20; //20 //5?? //15 =  300seconds
-// const slippage = ethers.utils.parseEther(".1"); // 10 pct max slippage
+// const blocksPerBatch = 20; //20 //5??
+// const slippage = ethers.utils.parseEther(".3"); // 10 pct max slippage
 // const buyFee = ethers.utils.parseEther("0.0015"); // 0.15% Buying Trading Fee
 // const sellFee = ethers.utils.parseEther("0.003"); // 0.3% Buying Trading Fee
 // const initialCurveSupply =
@@ -23,6 +22,10 @@
 // // Simulation Variables
 // const simulationRuns = 5;
 // const simulationAmount = ethers.utils.parseEther("100000");
+
+// console.log(
+//   "****************************************************************************PAYDIRT TEST************************************************************************"
+// );
 
 // // Helpers
 // const openAndClaimBuyOrder = require("./helpers/utils").openAndClaimBuyOrder(

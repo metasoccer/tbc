@@ -1,3 +1,4 @@
+const { ethers, network, hardhatArguments } = require("hardhat");
 const openAndClaimBuyOrder =
   (test, blocksPerBatch) => async (from, collateral, amount) => {
     //const beforePricePPM = await test.curve.getCollateralPricePPM(collateral);

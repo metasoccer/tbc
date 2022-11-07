@@ -1,8 +1,28 @@
+const TokenContract = require("../../../artifacts/contracts/PaydirtGold.sol/PaydirtGold.json");
+const DaiContract = require("../../../artifacts/contracts/TestDAI.sol/TestDAI.json");
+const CurveContract = require("../../../artifacts/contracts/BatchedBancorMarketMaker.sol/BatchedBancorMarketMaker.json");
+const { ethers, network } = require("hardhat");
+const {
+  daiAddress,
+  tokenAddress,
+  bancorAddress,
+  curveAddress,
+} = require("./addresses");
+
+//const [deployer, buyer] = await ethers.getSigners();
+
+//contracts
+// const token = new ethers.Contract(tokenAddress, TokenContract.abi, deployer);
+// const curve = new ethers.Contract(curveAddress, CurveContract.abi, deployer);
+// const dai = new ethers.Contract(daiAddress, DaiContract.abi, deployer);
+
+//const [deployer, buyer] = await ethers.getSigners();
+
 const openAndClaimBuyOrder =
-  (test, blocksPerBatch) => async (from, collateral, amount) => {
-    //const beforePricePPM = await test.curve.getCollateralPricePPM(collateral);
-    //const beforePrice = beforePricePPM.toNumber() / 1000000;
-    const tx = await test.curve
+  (blocksPerBatch) => async (from, collateral, amount) => {
+    const beforePricePPM = await curve.getCollateralPricePPM(collateral);
+    const beforePrice = beforePricePPM.toNumber() / 1000000;
+    const tx = await curve
       .connect(from)
       .openBuyOrder(from.address, collateral, amount);
     const receipt = await tx.wait();
@@ -13,22 +33,20 @@ const openAndClaimBuyOrder =
 
     await progressToNextBatch(blocksPerBatch)();
 
-    const initialPDGBalance = await test.token.balanceOf(from.address);
-    await test.curve
-      .connect(from)
-      .claimBuyOrder(from.address, batchId, collateral);
-    const finalPDGBalance = await test.token.balanceOf(from.address);
+    const initialPDGBalance = await token.balanceOf(from.address);
+    await curve.connect(from).claimBuyOrder(from.address, batchId, collateral);
+    const finalPDGBalance = await token.balanceOf(from.address);
     const tradePDGAmount = finalPDGBalance.sub(initialPDGBalance);
     const avgPrice =
       Number(ethers.utils.formatEther(amount)) /
       Number(ethers.utils.formatEther(tradePDGAmount));
     const slippage = (avgPrice - beforePrice) / beforePrice;
-    const totalSupply = await test.token.totalSupply();
-    const totalReserve = await test.dai.balanceOf(test.curve.address);
-    const totalFees = await test.dai.balanceOf(test.admin.address);
-    //const afterPricePPM = await test.curve.getCollateralPricePPM(collateral);
-    //const afterPrice = (afterPricePPM.toNumber()/1000000);
-    //const priceDelta = (afterPrice - beforePrice)/beforePrice;
+    const totalSupply = await token.totalSupply();
+    const totalReserve = await dai.balanceOf(curve.address);
+    const totalFees = await dai.balanceOf(admin.address);
+    const afterPricePPM = await curve.getCollateralPricePPM(collateral);
+    const afterPrice = afterPricePPM.toNumber() / 1000000;
+    const priceDelta = (afterPrice - beforePrice) / beforePrice;
 
     /*
   console.log("\nSuccesful curve BUY! \nBefore Price: %s DAI/MSU \nFrom: %s \nDAI Amount: %s \nMSU Amount: %s \nAverage trade price: %s DAI/MSU\nTrade Slippage: %s\% \nAfter Price: %s DAI/MSU \nPrice Delta: %s\% \nTotal MSU Supply: %s \nTotal Curve Reserve: %s\nAccumulated Trading Fees: %s DAI",
@@ -48,10 +66,10 @@ const openAndClaimBuyOrder =
   };
 
 const openAndClaimSellOrder =
-  (test, blocksPerBatch) => async (from, collateral, amount) => {
-    const beforePricePPM = await test.curve.getCollateralPricePPM(collateral);
+  (blocksPerBatch) => async (from, collateral, amount) => {
+    const beforePricePPM = await curve.getCollateralPricePPM(collateral);
     const beforePrice = beforePricePPM.toNumber() / 1000000;
-    const tx = await test.curve
+    const tx = await curve
       .connect(from)
       .openSellOrder(from.address, collateral, amount);
     const receipt = await tx.wait();
@@ -62,20 +80,18 @@ const openAndClaimSellOrder =
 
     await progressToNextBatch(blocksPerBatch)();
 
-    const initialBalance = await test.dai.balanceOf(from.address);
-    await test.curve
-      .connect(from)
-      .claimSellOrder(from.address, batchId, collateral);
-    const finalBalance = await test.dai.balanceOf(from.address);
+    const initialBalance = await dai.balanceOf(from.address);
+    await curve.connect(from).claimSellOrder(from.address, batchId, collateral);
+    const finalBalance = await dai.balanceOf(from.address);
     const tradeAmount = finalBalance.sub(initialBalance);
     const avgPrice =
       Number(ethers.utils.formatEther(tradeAmount)) /
       Number(ethers.utils.formatEther(amount));
     const slippage = (avgPrice - beforePrice) / beforePrice;
-    const totalSupply = await test.token.totalSupply();
-    const totalReserve = await test.dai.balanceOf(test.curve.address);
-    const totalFees = await test.dai.balanceOf(test.admin.address);
-    const afterPricePPM = await test.curve.getCollateralPricePPM(collateral);
+    const totalSupply = await token.totalSupply();
+    const totalReserve = await dai.balanceOf(curve.address);
+    const totalFees = await dai.balanceOf(admin.address);
+    const afterPricePPM = await curve.getCollateralPricePPM(collateral);
     const afterPrice = afterPricePPM.toNumber() / 1000000;
     const priceDelta = (afterPrice - beforePrice) / beforePrice;
     /*

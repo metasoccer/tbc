@@ -40,7 +40,7 @@ contract TestDAI is AccessControlEnumerable, ERC20 {
      * - the caller must have the `MINTER_ROLE`.
      */
     function mint(address to, uint256 amount) public virtual {
-        // require(hasRole(MINTER_ROLE, _msgSender()), "MetaSoccerToken: must have minter role to mint");
+        require(hasRole(MINTER_ROLE, _msgSender()), "MetaSoccerToken: must have minter role to mint");
 		// Free minting for simpler tests!
         _mint(to, amount);
     }

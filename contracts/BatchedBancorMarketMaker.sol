@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -9,11 +9,16 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./bancor-formula/interfaces/IBancorFormula.sol";
 import "./bancor-formula/BancorFormula.sol";
-import "./ERC20Token.sol";
+import "./PaydirtGold.sol";
+
+/**
+ * EXPLANATION CONTRACTf: It aggregates orders by batches to avoid front-running. 
+ * Each batch takes a predefined number of blocks that the user needs to wait in order to claim the order.
+ */
 
 contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
     using SafeERC20 for ERC20;
-    using SafeERC20 for ERC20Token;
+    using SafeERC20 for PaydirtGold;
     using SafeMath  for uint256;
 
     /**
@@ -22,6 +27,13 @@ contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
     */
     bytes32 public constant OPEN_ROLE                    = 0xefa06053e2ca99a43c97c4a4f3d8a394ee3323a8ff237e625fba09fe30ceb0a4;
     
+    //^^^^^^^^^^^FEES^^^^^^^^^^^ 
+    //for exmaple 185 basic points are = 1.85 pct, so 15 == 0.15pct
+    //so basically to calculate our fees form the buying and selling part of the bonding curve:
+    //amountPurchased* (fee/10.000)
+    //metasoccer: 0.15 buying fee, 0.3 selling fee
+    //so, if they purchase 5000 PDG tokens * (15/10.000) == 7.5 PDG tokens
+    //basis point is a unit use in finance and it is basically 1% of the 1%, or 1 between 10.000
     uint256 public constant PCT_BASE = 10 ** 18; // 0% = 0; 1% = 10 ** 16; 100% = 10 ** 18
     uint32  public constant PPM      = 1000000;
 
@@ -80,7 +92,7 @@ contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
         mapping(address => uint256) sellers;
     }
 
-    ERC20Token                public token;
+    PaydirtGold                public token;
     address                        public beneficiary;
     IBancorFormula                 public formula;
 
@@ -167,7 +179,7 @@ contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
 
         formula = _formula;
-        token = ERC20Token(_token);
+        token = PaydirtGold(_token);
         beneficiary = _beneficiary;
         curveSupply = _curveSupply;
         minCurveSupply = _minCurveSupply;
@@ -271,6 +283,12 @@ contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
      * @param _collateral The address of the collateral token to be spent
      * @param _value      The amount of collateral token to be spent
     */
+   /**
+    * PAYDIRT EXPLANATION: 
+    * Open Buy Order Allows the user to open a buy order for a given amount of collateral 
+    * (for example buy PDG for 1000 USDC). 
+    * He transfers the USDC but needs to wait the end of the batch to get the resulting PDGs.
+    */
     function openBuyOrder(address _buyer, address _collateral, uint256 _value) external nonReentrant {
         require(isOpen,                                                          ERROR_NOT_OPEN);
         require(_collateralIsWhitelisted(_collateral),                           ERROR_COLLATERAL_NOT_WHITELISTED);
@@ -302,6 +320,8 @@ contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
      * @param _batchId    The id of the batch in which buy orders are to be claimed
      * @param _collateral The address of the collateral token against which buy orders are to be claimed
     */
+
+   //Claim Buy Order Allows the user to get his PDGs after opening a buy order when the batch is done
     function claimBuyOrder(address _buyer, uint256 _batchId, address _collateral) external nonReentrant {
         require(_collateralIsWhitelisted(_collateral),       ERROR_COLLATERAL_NOT_WHITELISTED);
         require(_batchIsOver(_batchId),                      ERROR_BATCH_NOT_OVER);
@@ -331,6 +351,11 @@ contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
      * @param _buyer      The address of the user whose cancelled buy orders are to be claimed
      * @param _batchId    The id of the batch in which cancelled buy orders are to be claimed
      * @param _collateral The address of the collateral token against which cancelled buy orders are to be claimed
+    */
+   /**
+    * Claim Cancelled Buy Order In rare cases (when collateral is removed) 
+    * it may happen that a given batch is cancelled and pending orders may still be open. 
+    * This method allows an user who bought to get back the collateral he paid (DAIs)
     */
     function claimCancelledBuyOrder(address _buyer, uint256 _batchId, address _collateral) external nonReentrant {
         require(_batchIsCancelled(_batchId, _collateral),    ERROR_BATCH_NOT_CANCELLED);
@@ -667,7 +692,7 @@ contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
         collaterals[_collateral].reserveRatio = _reserveRatio;
         collaterals[_collateral].slippage = _slippage;
 
-        emit AddCollateralToken(_collateral, _virtualSupply, _virtualBalance, _reserveRatio, _slippage);
+        emit AddCollateralToken(_collateral, _virtualSupply, _virtualcurrentBatchId()Balance, _reserveRatio, _slippage);
     }
 
     function _removeCollateralToken(address _collateral) internal {
@@ -836,7 +861,7 @@ contract BatchedBancorMarketMaker is AccessControl, ReentrancyGuard {
         // static price is the current exact price in collateral
         // per token according to the initial state of the batch
         // [expressed in PPM for precision sake]
-        // => MSU/DAI price in PPM
+        // => PDG/USDC price in PPM
         uint256 staticPricePPM = _staticPricePPM(batch.supply, batch.balance, batch.reserveRatio);
 
         // [NOTE]
